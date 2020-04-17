@@ -76,6 +76,43 @@ public class Cube : MonoBehaviour {
 
     
     private void CreateTriangles () {
+        
+        int quads = (xSize * ySize + xSize * zSize + ySize * zSize) * 2;
+        int[] triangles = new int[quads * 6];
+        
+        int ring = (xSize + zSize) * 2;
+        int t = 0, v = 0;
+
+        for (int y = 0; y < ySize; y++, v++)
+        {
+            for (int q = 0; q < ring - 1; q++, v++) {
+                t = SetQuad(triangles, t, v, v + 1, v + ring, v + ring + 1);
+            }
+            t = SetQuad(triangles, t, v, v - ring + 1, v + ring, v + 1);
+        }
+
+        t = CreateTopFace(triangles, t, ring);
+        mesh.triangles = triangles;
+    }
+    
+    
+    private int CreateTopFace (int[] triangles, int t, int ring) {
+        int v = ring * ySize;
+        for (int x = 0; x < xSize - 1; x++, v++) {
+            t = SetQuad(triangles, t, v, v + 1, v + ring - 1, v + ring);
+        }
+        t = SetQuad(triangles, t, v, v + 1, v + ring - 1, v + 2);
+		
+        int vMin = ring * (ySize + 1) - 1;
+        int vMid = vMin + 1;
+
+        t = SetQuad(triangles, t, vMin, vMid, vMin - 1, vMid + xSize - 1);
+        for (int x = 1; x < xSize - 1; x++, vMid++) {
+            t = SetQuad(
+                triangles, t,
+                vMid, vMid + 1, vMid + xSize - 1, vMid + xSize);
+        }
+        return t;
     }
 
     private void OnDrawGizmos () {
